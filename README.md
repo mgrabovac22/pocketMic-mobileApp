@@ -1,36 +1,22 @@
-# 🎙️ PocketMic - Live Phone Microphone & Passthrough
+# 🎙️ PocketMic - React Native Live Microphone App
 
-**PocketMic** is an Android application that turns your smartphone into a real-time microphone. Stream your voice instantly to any connected external speaker via Bluetooth, AUX/3.5mm jack, or local network.
-
----
-
-## ✨ Features
-
-- **Real-Time Audio Streaming:** Low-latency voice passthrough from mic to speaker.
-- **Multiple Output Options:** Supports Bluetooth speakers, wired audio jacks, and USB audio outputs.
-- **Audio Control:** Adjustable microphone gain and output volume controls.
-- **Echo Reduction:** Built-in audio processing to minimize feedback screeching.
-- **Clean UI:** Simple one-tap start/stop interface.
+**PocketMic** is a React Native mobile application that turns your smartphone into a real-time microphone. Stream your live voice directly to connected external Bluetooth speakers, AUX sound systems, or USB audio devices with minimal latency.
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+## Features
 
-- **Language:** Kotlin
-- **Min SDK:** 21+ (Android 5.0)
-- **Audio APIs:** `AudioRecord`, `AudioTrack` (or Google's Oboe library for high-performance low-latency)
-- **Permissions Required:** `RECORD_AUDIO`, `MODIFY_AUDIO_SETTINGS`
+- **Real-Time Voice Passthrough:** Ultra-low latency PCM audio streaming from the device microphone to the output speaker.
+- **Visual Audio Meter:** Live sound level visualization (waveform/VU meter) while speaking.
+- **Gain & Volume Control:** Adjust input gain on the fly to prevent clipping or distortion.
+- **Multiple Output Routing:** Supports Bluetooth speakers, 3.5mm AUX jack, and USB audio interfaces.
+- **Minimalist UI:** Clean, intuitive one-tap operation.
 
 ---
 
-## 🚀 Getting Started
+## Tech Stack & Dependencies
 
-### Prerequisites
-* Android Studio Iguana / Jellyfish (or newer)
-* Android device with API 21+
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone [https://github.com/your-username/PocketMic.git](https://github.com/your-username/PocketMic.git)
+- **Framework:** React Native
+- **Language:** TypeScript / JavaScript
+- **Audio Core:** PCM Stream Buffer Processing (`react-native-live-audio-stream` / Native Audio Modules)
+- **Permissions:** Android `RECORD_AUDIO`, `MODIFY_AUDIO_SETTINGS`
