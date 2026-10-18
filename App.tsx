@@ -14,7 +14,7 @@ import { ToggleButton } from './src/components/ToggleButton';
 import { NOISE_GATE_THRESHOLD, usePocketMic } from './src/hooks/usePocketMic';
 import { PocketMicAudio } from './src/native/PocketMicAudio';
 
-const BUFFER_OPTIONS = [40, 60, 100, 160];
+const BUFFER_OPTIONS = [10, 15, 20, 25, 30, 40, 60, 80, 120, 160];
 
 type OptionRowProps = {
   label: string;
@@ -47,8 +47,10 @@ function OptionRow({
 
 function App() {
   const [gain, setGain] = useState(1);
+  const [voiceVolume, setVoiceVolume] = useState(1);
+  const [musicLevel, setMusicLevel] = useState(1);
   const [outputVolume, setOutputVolume] = useState(0.8);
-  const [bufferSizeMs, setBufferSizeMs] = useState(60);
+  const [bufferSizeMs, setBufferSizeMs] = useState(20);
   const [noiseGateEnabled, setNoiseGateEnabled] = useState(true);
   const [highPassEnabled, setHighPassEnabled] = useState(true);
   const [antiFeedbackEnabled, setAntiFeedbackEnabled] = useState(true);
@@ -62,11 +64,20 @@ function App() {
     antiFeedbackEnabled,
     duckMusicEnabled,
     outputVolume,
+    musicLevel,
   });
 
   useEffect(() => {
     PocketMicAudio.setGain(gain);
   }, [gain]);
+
+  useEffect(() => {
+    PocketMicAudio.setVoiceVolume(voiceVolume);
+  }, [voiceVolume]);
+
+  useEffect(() => {
+    PocketMicAudio.setMusicLevel(musicLevel);
+  }, [musicLevel]);
 
   useEffect(() => {
     PocketMicAudio.setNoiseGate(noiseGateEnabled ? NOISE_GATE_THRESHOLD : 0);
@@ -111,6 +122,7 @@ function App() {
           <View style={styles.panel}>
             <Slider
               label="Pojačanje mikrofona (Gain)"
+              description="Samo ulaz — koliko pojačavam signal s mikrofona"
               value={gain}
               min={0}
               max={4}
@@ -119,7 +131,28 @@ function App() {
               onValueChange={setGain}
             />
             <Slider
-              label="Izlazna glasnoća"
+              label="Glasnoća glasa"
+              description="Samo tvoj glas na izlazu"
+              value={voiceVolume}
+              min={0}
+              max={1}
+              step={0.05}
+              formatValue={value => `${Math.round(value * 100)}%`}
+              onValueChange={setVoiceVolume}
+            />
+            <Slider
+              label="Glazba i ostalo"
+              description="Tiša glazba, glas ostaje jednak"
+              value={musicLevel}
+              min={0.25}
+              max={1}
+              step={0.05}
+              formatValue={value => `${Math.round(value * 100)}%`}
+              onValueChange={setMusicLevel}
+            />
+            <Slider
+              label="Ukupna glasnoća"
+              description="Master — utječe na sve zajedno"
               value={outputVolume}
               min={0}
               max={1}
@@ -143,9 +176,19 @@ function App() {
                 );
               })}
             </View>
+            {bufferSizeMs <= 25 && (
+              <View style={styles.warningBox}>
+                <Text style={styles.warningText}>
+                  Upozorenje: vrlo niska latencija — na nekim uređajima može
+                  pucketati ili rezati zvuk. Ako se to dogodi, odaberi 40 ms
+                  ili više.
+                </Text>
+              </View>
+            )}
             <Text style={styles.hint}>
-              Procijenjena latencija ≈ {bufferSizeMs * 2} ms
-              {isActive ? ' (mijenja se pri sljedećem pokretanju)' : ''}
+              Engine latencija ≈ {bufferSizeMs * 2} ms preko AUX kabla · BT
+              zvučnik dodaje ~100–200 ms
+              {isActive ? ' · buffer se mijenja pri sljedećem pokretanju' : ''}
             </Text>
 
             <View style={styles.divider} />
@@ -272,6 +315,19 @@ const styles = StyleSheet.create({
     color: '#64748b',
     fontSize: 11,
     marginTop: 10,
+  },
+  warningBox: {
+    backgroundColor: '#2c2310',
+    borderColor: '#b45309',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 10,
+  },
+  warningText: {
+    color: '#fbbf24',
+    fontSize: 11,
+    lineHeight: 16,
   },
   divider: {
     height: 1,

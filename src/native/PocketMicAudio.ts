@@ -40,6 +40,8 @@ type NativePocketMicAudio = {
   setHighPass(enabled: boolean): void;
   setPreventFeedback(enabled: boolean): void;
   setDuckMusic(enabled: boolean): void;
+  setVoiceVolume(value: number): void;
+  setMusicLevel(value: number): void;
   setBufferSizeMs(value: number): void;
   setOutputVolume(value: number): void;
   isRunning(): Promise<boolean>;
@@ -78,6 +80,12 @@ export const PocketMicAudio = {
   },
   setDuckMusic(enabled: boolean): void {
     optionalModule()?.setDuckMusic(enabled);
+  },
+  setVoiceVolume(value: number): void {
+    optionalModule()?.setVoiceVolume(value);
+  },
+  setMusicLevel(value: number): void {
+    optionalModule()?.setMusicLevel(value);
   },
   setBufferSizeMs(value: number): void {
     optionalModule()?.setBufferSizeMs(value);

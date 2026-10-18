@@ -124,6 +124,16 @@ class PocketMicAudioModule(private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  fun setVoiceVolume(value: Double) {
+    engine.voiceVolume = value.toFloat().coerceIn(0f, 1f)
+  }
+
+  @ReactMethod
+  fun setMusicLevel(value: Double) {
+    engine.musicBalance = (1.0 / value.coerceIn(0.25, 1.0)).toFloat()
+  }
+
+  @ReactMethod
   fun setBufferSizeMs(value: Int) {
     engine.bufferSizeMs = value.coerceIn(MIN_BUFFER_MS, MAX_BUFFER_MS)
   }
@@ -165,7 +175,7 @@ class PocketMicAudioModule(private val reactContext: ReactApplicationContext) :
     private const val MIN_GAIN = 0f
     private const val MAX_GAIN = 8f
     private const val MAX_GATE = 0.5f
-    private const val MIN_BUFFER_MS = 20
+    private const val MIN_BUFFER_MS = 10
     private const val MAX_BUFFER_MS = 400
   }
 }

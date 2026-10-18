@@ -7,8 +7,6 @@ import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.AudioTrack
 import android.media.MediaRecorder
-import android.media.audiofx.AcousticEchoCanceler
-import android.media.audiofx.NoiseSuppressor
 import android.os.Build
 import android.os.Process
 import kotlin.math.abs
@@ -54,6 +52,12 @@ class AudioEngine(
   var duckMusic: Boolean = true
 
   @Volatile
+  var voiceVolume: Float = 1f
+
+  @Volatile
+  var musicBalance: Float = 1f
+
+  @Volatile
   var bufferSizeMs: Int = DEFAULT_BUFFER_MS
 
   @Volatile
@@ -62,8 +66,6 @@ class AudioEngine(
   private var record: AudioRecord? = null
   private var track: AudioTrack? = null
   private var worker: Thread? = null
-  private var echoCanceler: AcousticEchoCanceler? = null
-  private var noiseSuppressor: NoiseSuppressor? = null
   private var focusRequest: AudioFocusRequest? = null
 
   private val focusChangeListener =
@@ -107,7 +109,6 @@ class AudioEngine(
 
     record = recorder
     track = player
-    attachFx(recorder)
 
     if (duckMusic) {
       requestAudioFocus()
@@ -151,6 +152,8 @@ class AudioEngine(
     var hpIn = 0f
     var hpOut = 0f
     var smoothedGain = gain
+    var trimmed = musicBalance
+    var appliedVoiceVolume = -1f
     var gate = 1f
     var duck = 1f
     var framesSinceEmit = 0
@@ -160,6 +163,8 @@ class AudioEngine(
       Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
       recorder.startRecording()
       player.play()
+      player.setVolume(voiceVolume)
+      appliedVoiceVolume = voiceVolume
       listener.onStatus("running", null)
 
       while (running) {
@@ -202,6 +207,13 @@ class AudioEngine(
           }
 
         smoothedGain += (gain - smoothedGain) * GAIN_SMOOTHING
+        trimmed += (musicBalance - trimmed) * GAIN_SMOOTHING
+
+        val currentVoiceVolume = voiceVolume
+        if (currentVoiceVolume != appliedVoiceVolume) {
+          player.setVolume(currentVoiceVolume)
+          appliedVoiceVolume = currentVoiceVolume
+        }
 
         duck =
           if (!preventFeedback) {
@@ -216,7 +228,7 @@ class AudioEngine(
         var outPeak = 0f
         var j = 0
         while (j < read) {
-          val s = softClip(floats[j] * smoothedGain * gate * duck)
+          val s = softClip(floats[j] * smoothedGain * trimmed * gate * duck)
           output[j] = (s * 32767f).toInt().toShort()
           outSumSq += (s * s).toDouble()
           if (abs(s) > outPeak) {
@@ -348,22 +360,6 @@ class AudioEngine(
     focusRequest = null
   }
 
-  private fun attachFx(recorder: AudioRecord) {
-    try {
-      if (AcousticEchoCanceler.isAvailable()) {
-        echoCanceler =
-          AcousticEchoCanceler.create(recorder.audioSessionId)?.also { it.enabled = true }
-      }
-      if (NoiseSuppressor.isAvailable()) {
-        noiseSuppressor =
-          NoiseSuppressor.create(recorder.audioSessionId)?.also { it.enabled = true }
-      }
-    } catch (e: Throwable) {
-      echoCanceler = null
-      noiseSuppressor = null
-    }
-  }
-
   private fun releaseRecorder(recorder: AudioRecord) {
     try {
       recorder.stop()
@@ -376,13 +372,6 @@ class AudioEngine(
     if (record === recorder) {
       record = null
     }
-    try {
-      echoCanceler?.release()
-      noiseSuppressor?.release()
-    } catch (e: Throwable) {
-    }
-    echoCanceler = null
-    noiseSuppressor = null
   }
 
   private fun releasePlayer(player: AudioTrack) {
@@ -400,8 +389,8 @@ class AudioEngine(
   }
 
   companion object {
-    const val SAMPLE_RATE = 44100
-    const val DEFAULT_BUFFER_MS = 60
+    const val SAMPLE_RATE = 48000
+    const val DEFAULT_BUFFER_MS = 20
     const val DEFAULT_GATE = 0.02f
 
     private const val ENCODING = AudioFormat.ENCODING_PCM_16BIT

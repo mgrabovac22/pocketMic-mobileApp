@@ -18,5 +18,5 @@
 
 - **Framework:** React Native
 - **Language:** TypeScript / JavaScript
-- **Audio Core:** PCM Stream Buffer Processing (`react-native-live-audio-stream` / Native Audio Modules)
+- **Audio Core:** Custom Kotlin native module (`AudioRecord → DSP → AudioTrack`), PCM 16-bit mono 48 kHz, `PERFORMANCE_MODE_LOW_LATENCY`, buffers 10–160 ms
 - **Permissions:** Android `RECORD_AUDIO`, `MODIFY_AUDIO_SETTINGS`

@@ -19,6 +19,7 @@ type Options = {
   antiFeedbackEnabled: boolean;
   duckMusicEnabled: boolean;
   outputVolume: number;
+  musicLevel: number;
 };
 
 export function usePocketMic(options: Options) {
@@ -59,8 +60,8 @@ export function usePocketMic(options: Options) {
     if (status !== 'running') {
       return;
     }
-    PocketMicAudio.setOutputVolume(options.outputVolume);
-  }, [options.outputVolume, status]);
+    PocketMicAudio.setOutputVolume(options.outputVolume * options.musicLevel);
+  }, [options.outputVolume, options.musicLevel, status]);
 
   useEffect(() => {
     return () => {

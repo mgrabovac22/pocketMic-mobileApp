@@ -9,6 +9,7 @@ import {
 
 type Props = {
   label: string;
+  description?: string;
   value: number;
   min: number;
   max: number;
@@ -35,6 +36,7 @@ function snapToStep(value: number, min: number, max: number, step?: number) {
 
 export function Slider({
   label,
+  description,
   value,
   min,
   max,
@@ -109,6 +111,9 @@ export function Slider({
           {formatValue ? formatValue(value) : value.toFixed(2)}
         </Text>
       </View>
+      {description != null && (
+        <Text style={styles.description}>{description}</Text>
+      )}
       <View
         style={styles.hitArea}
         onLayout={updateWidth}
@@ -148,6 +153,12 @@ const styles = StyleSheet.create({
     color: '#f8fafc',
     fontSize: 13,
     fontVariant: ['tabular-nums'],
+  },
+  description: {
+    color: '#64748b',
+    fontSize: 11,
+    marginTop: -6,
+    marginBottom: 8,
   },
   hitArea: {
     height: 36,
